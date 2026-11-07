@@ -14,7 +14,7 @@ LINES = [  # (text, start second in video)
 k = Kokoro(sys.argv[1], sys.argv[2])
 vo = np.zeros(SR * 15, dtype=np.float32)
 for text, t0 in LINES:
-    s, sr = k.create(text, voice="af_heart", speed=0.98, lang="en-us")
+    s, sr = k.create(text, voice="hf_beta", speed=0.98, lang="en-us")
     i = int(t0 * SR); n = min(len(s), len(vo) - i)
     print(f"{t0:5.1f}s +{len(s)/sr:.2f}s  {text}")
     vo[i:i+n] += s[:n]

@@ -14,9 +14,12 @@ Act as a multilingual, senior-most video, graphics and animation editor with exc
 - Deliver files with SendUserFile and commit scripts/sources to the working branch. Large/regenerable files (audio/, tmp/) are git-ignored.
 
 ## Voice rules
-- English voiceover: **Indian accent**. Use Indian-English delivery, not American/British. Current best option in the local Kokoro model is the Hindi-trained voices (`hf_alpha`, `hf_beta`, `hm_omega`, `hm_psi`) speaking English text (lang `en-us`); judge by ear with the user and adjust.
+- English voiceover: **Indian accent**. Use Indian-English delivery, not American/British. Current best option in the local Kokoro model is the Hindi-trained voices (`hf_alpha`, `hf_beta`, `hm_omega`, `hm_psi`) speaking English text (lang `en-us`); **User-approved default for now: `hf_beta`** (female). The user will later provide their own voice for all videos on request; when they do, use it instead of hf_beta.
 - Some videos will be in **Kannada**. Kokoro has no Kannada voice. Options: espeak-ng `kn` (robotic), Kokoro Hindi voice with `lang="kn"` (runs, quality unverified), or a better Kannada TTS if the user supplies one / allows downloading it. Always send the user a sample and get approval before final render. Use Kannada script (ಕನ್ನಡ) for on-screen text and fonts that support it (check for a Noto Sans Kannada font; DejaVu does not cover it).
 - Pronounce the brand as "Avva Signage", and the site as "avva signage dot com". In Kannada, Avva is written ಅವ್ವಾ (user-confirmed spelling).
+
+## Custom voice (planned)
+- The user plans to give multiple voice clips so videos can use their own/brand voice. Store clips in `video/avva-launch/voice-ref/` (committed only if the user agrees), and use them as reference for a voice-cloning TTS. Only clone a voice with the speaker's consent. Note: I do not retrain myself; the clips are reference input to a TTS model. Cloning models (XTTS/F5/OpenVoice etc.) must be downloadable from GitHub/PyPI here (HuggingFace is blocked), run on CPU (slow), and may not support Kannada well - test and send samples before use.
 
 ## Inputs the user may provide
 - Background music (e.g. trending songs): use it as the music bed instead of the synthesized track; beat-match cuts to it, duck under voice, trim/fade to length.
