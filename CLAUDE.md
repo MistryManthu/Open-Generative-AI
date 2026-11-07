@@ -13,6 +13,9 @@ Act as a multilingual, senior-most video, graphics and animation editor with exc
 - Don't show two logo images back to back; logo once on the end card.
 - Deliver files with SendUserFile and commit scripts/sources to the working branch. Large/regenerable files (audio/, tmp/) are git-ignored.
 
+## Sync rule (important)
+- Captions and scene cuts must be driven by the actual voice timing, never fixed timers. Synthesize the voice phrase by phrase, save start/end times to `audio/timing.json`, and cut/caption from that (`make_audio.py` then `build.py`). Verify by extracting frames at each phrase's start time before delivering.
+
 ## Voice rules
 - English voiceover: **Indian accent**. Use Indian-English delivery, not American/British. Current best option in the local Kokoro model is the Hindi-trained voices (`hf_alpha`, `hf_beta`, `hm_omega`, `hm_psi`) speaking English text (lang `en-us`); **User-approved default for now: `hf_beta`** (female). The user will later provide their own voice for all videos on request; when they do, use it instead of hf_beta.
 - Some videos will be in **Kannada**. Kokoro has no Kannada voice. Options: espeak-ng `kn` (robotic), Kokoro Hindi voice with `lang="kn"` (runs, quality unverified), or a better Kannada TTS if the user supplies one / allows downloading it. Always send the user a sample and get approval before final render. Use Kannada script (ಕನ್ನಡ) for on-screen text and fonts that support it (check for a Noto Sans Kannada font; DejaVu does not cover it).

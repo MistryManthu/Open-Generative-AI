@@ -5,20 +5,29 @@ import sys, numpy as np, soundfile as sf
 from kokoro_onnx import Kokoro
 
 SR = 24000
-LINES = [  # (text, start second in video)
-    ("Introducing Avva Signage.", 0.4),
-    ("Where your brand lights up.", 3.4),
-    ("Neon. L E D. Custom signs, made just for you.", 5.7),
-    ("Now live at avva signage dot com.", 10.7),
+# (spoken text, on-screen caption, pause after in seconds). Each phrase is synthesized
+# separately so captions and scene cuts can follow the exact voice timing.
+PHRASES = [
+    ("Introducing Avva Signage.", "Introducing Avva Signage", 0.6),
+    ("Where your brand lights up.", "Where your brand lights up", 0.9),
+    ("Neon.", "Neon", 0.35),
+    ("L E D.", "LED", 0.35),
+    ("Custom signs, made just for you.", "Custom signs, made just for you", 0.9),
+    ("Now live at avva signage dot com.", "Now live at avvasignage.com", 0.0),
 ]
+import json
 k = Kokoro(sys.argv[1], sys.argv[2])
-vo = np.zeros(SR * 15, dtype=np.float32)
-for text, t0 in LINES:
+vo = np.zeros(SR * 15, dtype=np.float32); t = 0.5; timing = []
+for text, cap, gap in PHRASES:
     s, sr = k.create(text, voice="hf_beta", speed=0.98, lang="en-us")
-    i = int(t0 * SR); n = min(len(s), len(vo) - i)
-    print(f"{t0:5.1f}s +{len(s)/sr:.2f}s  {text}")
-    vo[i:i+n] += s[:n]
+    # trim leading/trailing silence so timings are tight
+    nz = np.where(np.abs(s) > 0.01)[0]; s = s[nz[0]:nz[-1] + 1]
+    i = int(t * SR); vo[i:i + len(s)] += s[:len(vo) - i]
+    timing.append({"text": text, "caption": cap, "start": round(t, 3), "end": round(t + len(s) / SR, 3)})
+    print(f"{t:5.2f}-{t + len(s)/SR:5.2f}  {text}")
+    t += len(s) / SR + gap
 sf.write("audio/voice.wav", vo, SR)
+json.dump(timing, open("audio/timing.json", "w"), ensure_ascii=False, indent=1)
 
 # --- music: warm pad + plucked arpeggio + soft pulse, Am-F-C-G at 100 BPM ---
 bpm = 100; beat = 60 / bpm; T = np.arange(SR * 15) / SR
