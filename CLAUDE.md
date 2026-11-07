@@ -16,7 +16,7 @@ Act as a multilingual, senior-most video, graphics and animation editor with exc
 ## Voice rules
 - English voiceover: **Indian accent**. Use Indian-English delivery, not American/British. Current best option in the local Kokoro model is the Hindi-trained voices (`hf_alpha`, `hf_beta`, `hm_omega`, `hm_psi`) speaking English text (lang `en-us`); judge by ear with the user and adjust.
 - Some videos will be in **Kannada**. Kokoro has no Kannada voice. Options: espeak-ng `kn` (robotic), Kokoro Hindi voice with `lang="kn"` (runs, quality unverified), or a better Kannada TTS if the user supplies one / allows downloading it. Always send the user a sample and get approval before final render. Use Kannada script (ಕನ್ನಡ) for on-screen text and fonts that support it (check for a Noto Sans Kannada font; DejaVu does not cover it).
-- Pronounce the brand as "Avva Signage", and the site as "avva signage dot com".
+- Pronounce the brand as "Avva Signage", and the site as "avva signage dot com". In Kannada, Avva is written ಅವ್ವಾ (user-confirmed spelling).
 
 ## Inputs the user may provide
 - Background music (e.g. trending songs): use it as the music bed instead of the synthesized track; beat-match cuts to it, duck under voice, trim/fade to length.
