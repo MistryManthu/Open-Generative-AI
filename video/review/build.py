@@ -17,6 +17,23 @@ for i, z in enumerate(Z):
 fc += "".join(f"[p{i}]" for i in range(len(Z))) + f"concat=n={len(Z)}:v=1:a=0[v]"
 run("-i", "src/raw.mp4", "-filter_complex", fc, "-map", "[v]", "-r", "30", "-c:v", "libx264", "-crf", "14", "-pix_fmt", "yuv420p", "tmp/core.mp4")
 
+# 1b) poster cutaways (full-screen, synced to the phrase being spoken): (poster, start, end, zoom_in?)
+CUT = [("p3", 2.55, 6.17, True), ("p4", 6.97, 9.78, False), ("p2", 13.55, 15.5, True), ("p1", 20.03, 24.3, False)]
+for k, (p, s, e, zin) in enumerate(CUT):
+    d = e - s; z = f"1+0.10*on/30/{d:.3f}" if zin else f"1.10-0.10*on/30/{d:.3f}"
+    run("-i", f"src/posters/{p}.jpg", "-filter_complex",
+        "[0]split[a][b];[a]scale=2160:3840:force_original_aspect_ratio=increase,crop=2160:3840,boxblur=40:5,eq=brightness=-0.2[bg];"
+        "[b]scale=2000:-2:flags=lanczos,unsharp=5:5:0.8[fg];[bg][fg]overlay=(W-w)/2:(H-h)/2", "-frames:v", "1", f"tmp/{p}_comp.png")
+# (cutaway streams are built inside one filtergraph below; -t on the input limits each poster clip's length)
+fc2 = "[0:v]null[b0];"
+for k, (p, s, e, zin) in enumerate(CUT):
+    d = e - s; z = f"1+0.10*on/30/{d:.3f}" if zin else f"1.10-0.10*on/30/{d:.3f}"
+    fc2 += (f"[{k+1}:v]zoompan=z='{z}':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d=1:s=1080x1920:fps=30,format=yuva420p,"
+            f"fade=t=in:st=0:d=0.15:alpha=1,fade=t=out:st={d-0.15:.3f}:d=0.15:alpha=1,setpts=PTS+{s}/TB[c{k}];"
+            f"[b{k}][c{k}]overlay=0:0:eof_action=pass[b{k+1}];")
+run("-i", "tmp/core.mp4", *sum([["-loop", "1", "-framerate", "30", "-t", f"{e-s:.3f}", "-i", f"tmp/{p}_comp.png"] for p, s, e, z in CUT], []),
+    "-filter_complex", fc2.rstrip(";"), "-map", f"[b{len(CUT)}]", "-r", "30", "-c:v", "libx264", "-crf", "14", "-pix_fmt", "yuv420p", "tmp/core2.mp4")
+
 # 2) audio: clean voice, music ducked under it
 af = ("[0:a]highpass=f=90,afftdn=nr=12:nf=-30,acompressor=threshold=0.1:ratio=3:attack=10:release=150,"
       "loudnorm=I=-16:TP=-1.5:LRA=11,aresample=48000,aformat=channel_layouts=stereo,asplit[vo1][vo2];"
@@ -51,7 +68,7 @@ def overlay(name, W, H, capFont, wrapW, capBottom, topY, topFont, ratingFont, la
     open(f"tmp/{name}_c.txt", "w").write("LIKE  •  FOLLOW  •  SHARE")
     d.append(txt(f"tmp/{name}_c.txt", topFont, "white", "(w-text_w)/2", topY, "between(t,28.8,34.6)", box="0x6B1F1Fe6", bw=18))
     chain.append("[base]" + ",".join(d) + ",fade=t=out:st=34.8:d=0.5[v]")
-    run("-i", "tmp/core.mp4", "-i", "tmp/audio.wav", "-filter_complex", ";".join(chain), "-map", "[v]", "-map", "1:a", "-t", str(DUR),
+    run("-i", "tmp/core2.mp4", "-i", "tmp/audio.wav", "-filter_complex", ";".join(chain), "-map", "[v]", "-map", "1:a", "-t", str(DUR),
         "-c:v", "libx264", "-crf", "17", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "192k", out)
 
 overlay("v", 1080, 1920, 58, 24, 380, 150, 48, 200, False, "review-vertical.mp4")
