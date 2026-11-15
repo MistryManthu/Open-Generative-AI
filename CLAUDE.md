@@ -34,3 +34,6 @@ Act as a multilingual, senior-most video, graphics and animation editor with exc
 - Tools: ffmpeg + drawtext/xfade/zoompan available. espeak-ng installed via apt. Kokoro TTS: `pip install kokoro-onnx soundfile` in a venv; model files from github.com/thewh1teagle/kokoro-onnx releases `model-files-v1.0` (`kokoro-v1.0.int8.onnx`, `voices-v1.0.bin`).
 - The app (Next.js) runs with `npx next dev -p 3000`; submodules point at the user's forks (MistryManthu/Vibe-Workflow, open-ai-agents-hub, Open-AI-Design-Agent), cloned into `packages/`.
 - Fonts: DejaVu and Liberation are installed. No Indic-script font confirmed yet.
+
+## Review/creator videos (`video/review/`)
+- User sends a raw talking-head video; I enhance (denoise, gamma/contrast, sharpen - classical ffmpeg, not AI face restoration), add zoom jump-cuts, synced captions, title/rating/CTA graphics and ducked music. `build.py` reads `captions.json` ([start,end,text]); `transcribe.py` (sherpa-onnx whisper-small from GitHub releases `asr-models`) gives rough phrase timing, but accented speech is mis-transcribed, so write captions from the intended script and use detected pauses for timing. Always flag placeholder text the user may have read out literally.
